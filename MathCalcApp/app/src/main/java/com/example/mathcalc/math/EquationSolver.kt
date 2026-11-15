@@ -13,55 +13,55 @@ object EquationSolver {
 
     fun solve(type: String, coefs: List<Double>): EquationResult = when (type.lowercase()) {
         "linear" -> {
-            require(coefs.size >= 2) { "Для линейного уравнения нужно 2 коэффициента" }
+            require(coefs.size >= 2) { L10n.t("needCoefs", L10n.t("eqLinear"), 2) }
             solveLinear(coefs[0], coefs[1])
         }
         "quadratic" -> {
-            require(coefs.size >= 3) { "Для квадратного уравнения нужно 3 коэффициента" }
+            require(coefs.size >= 3) { L10n.t("needCoefs", L10n.t("eqQuadratic"), 3) }
             solveQuadratic(coefs[0], coefs[1], coefs[2])
         }
         "cubic" -> {
-            require(coefs.size >= 4) { "Для кубического уравнения нужно 4 коэффициента" }
+            require(coefs.size >= 4) { L10n.t("needCoefs", L10n.t("eqCubic"), 4) }
             solveCubic(coefs[0], coefs[1], coefs[2], coefs[3])
         }
-        else -> throw IllegalArgumentException("Неизвестный тип уравнения: $type")
+        else -> throw IllegalArgumentException(L10n.t("unknownType", type))
     }
 
     // ---------- Linear ----------
 
     fun solveLinear(a: Double, b: Double): EquationResult {
         val steps = mutableListOf<SolutionStep>()
-        steps += SolutionStep("Исходное уравнение", "${fmt(a)}x + ${fmt(b)} = 0")
+        steps += SolutionStep(L10n.t("originalEquation"), "${fmt(a)}x + ${fmt(b)} = 0")
         if (a == 0.0) {
             return if (b == 0.0) {
-                steps += SolutionStep("Анализ", "a = 0 и b = 0 — уравнение верно при любом x")
-                EquationResult("linear", steps, emptyList(), "Уравнение имеет бесконечно много решений (тождество)")
+                steps += SolutionStep(L10n.t("analysis"), L10n.t("linearIdentityDetail"))
+                EquationResult("linear", steps, emptyList(), L10n.t("identitySummary"))
             } else {
-                steps += SolutionStep("Анализ", "a = 0 — уравнение ${fmt(b)} = 0 не имеет решений")
-                EquationResult("linear", steps, emptyList(), "Уравнение не имеет решений")
+                steps += SolutionStep(L10n.t("analysis"), L10n.t("linearNoRootsDetail", fmt(b)))
+                EquationResult("linear", steps, emptyList(), L10n.t("noSolutionsSummary"))
             }
         }
-        steps += SolutionStep("Переносим свободный член", "${fmt(a)}x = ${fmt(-b)}")
+        steps += SolutionStep(L10n.t("moveConstant"), "${fmt(a)}x = ${fmt(-b)}")
         val root = -b / a
-        steps += SolutionStep("Делим на коэффициент при x", "x = ${fmt(-b)} / ${fmt(a)} = ${fmt(root)}")
-        steps += SolutionStep("Проверка подстановкой", "${fmt(a)} · ${fmt(root)} + ${fmt(b)} = ${fmt(a * root + b)} = 0 ✓")
-        return EquationResult("linear", steps, listOf(root), "Корень уравнения: x = ${fmt(root)}")
+        steps += SolutionStep(L10n.t("divideByX"), "x = ${fmt(-b)} / ${fmt(a)} = ${fmt(root)}")
+        steps += SolutionStep(L10n.t("verification"), "${fmt(a)} · ${fmt(root)} + ${fmt(b)} = ${fmt(a * root + b)} = 0 ✓")
+        return EquationResult("linear", steps, listOf(root), L10n.t("rootSummary", fmt(root)))
     }
 
     // ---------- Quadratic ----------
 
     fun solveQuadratic(a: Double, b: Double, c: Double): EquationResult {
-        require(a != 0.0) { "Коэффициент a не может быть равен нулю (это не квадратное уравнение)" }
+        require(a != 0.0) { L10n.t("coefAZero", L10n.t("notAEquation", L10n.t("eqQuadratic"))) }
         val steps = mutableListOf<SolutionStep>()
-        steps += SolutionStep("Исходное уравнение", fmtQuadratic(a, b, c) + " = 0")
+        steps += SolutionStep(L10n.t("originalEquation"), fmtQuadratic(a, b, c) + " = 0")
 
         val d = b * b - 4 * a * c
-        steps += SolutionStep("Дискриминант", "D = b² − 4ac = ${fmt(b * b)} − 4·${fmt(a)}·${fmt(c)} = ${fmt(d)}")
+        steps += SolutionStep(L10n.t("discriminant"), "D = b² − 4ac = ${fmt(b * b)} − 4·${fmt(a)}·${fmt(c)} = ${fmt(d)}")
 
         val twoA = 2 * a
         return when {
             d > 0 -> {
-                steps += SolutionStep("Анализ дискриминанта", "D = ${fmt(d)} > 0 → два корня")
+                steps += SolutionStep(L10n.t("discAnalysis"), L10n.t("discTwoRoots", fmt(d)))
                 val x1 = (-b + kotlin.math.sqrt(d)) / twoA
                 val x2 = (-b - kotlin.math.sqrt(d)) / twoA
                 val exact1 = exactForm(-b, d, twoA, +1)
@@ -69,29 +69,29 @@ object EquationSolver {
                 val detail = buildString {
                     append("x = (−b ± √D) / 2a = (${fmt(-b)} ± √${fmt(d)}) / ${fmt(twoA)}")
                     if (exact1 != null) {
-                        append("\nТочная форма: x₁ = $exact1, x₂ = $exact2")
+                        append("\n" + L10n.t("exactForm", exact1, exact2))
                     }
                     append("\nx₁ ≈ ${fmt(x1)},  x₂ ≈ ${fmt(x2)}")
                 }
-                steps += SolutionStep("Формула корней", detail)
-                steps += SolutionStep("Теорема Виета", "x₁ + x₂ = −b/a = ${fmt(-b / a)} (проверка: ${fmt(x1 + x2)});  x₁·x₂ = c/a = ${fmt(c / a)} (проверка: ${fmt(x1 * x2)})")
-                steps += SolutionStep("Проверка подстановкой", "a·x₁² + b·x₁ + c = ${fmt(a * x1 * x1 + b * x1 + c)};  a·x₂² + b·x₂ + c = ${fmt(a * x2 * x2 + b * x2 + c)}")
-                EquationResult("quadratic", steps, listOf(x1, x2), "Два корня: x₁ = ${fmt(x1)}, x₂ = ${fmt(x2)}")
+                steps += SolutionStep(L10n.t("rootFormula"), detail)
+                steps += SolutionStep(L10n.t("vieta"), "x₁ + x₂ = −b/a = ${fmt(-b / a)};  x₁·x₂ = c/a = ${fmt(c / a)}")
+                steps += SolutionStep(L10n.t("verification"), "a·x₁² + b·x₁ + c = ${fmt(a * x1 * x1 + b * x1 + c)};  a·x₂² + b·x₂ + c = ${fmt(a * x2 * x2 + b * x2 + c)}")
+                EquationResult("quadratic", steps, listOf(x1, x2), L10n.t("twoRootsSummary", fmt(x1), fmt(x2)))
             }
             d == 0.0 -> {
-                steps += SolutionStep("Анализ дискриминанта", "D = 0 → один (двойной) корень")
+                steps += SolutionStep(L10n.t("discAnalysis"), L10n.t("discOneRoot"))
                 val x = -b / twoA
-                steps += SolutionStep("Формула корня", "x = −b / 2a = ${fmt(-b)} / ${fmt(twoA)} = ${fmt(x)}")
-                steps += SolutionStep("Теорема Виета", "x₁ + x₂ = −b/a = ${fmt(-b / a)} = 2x ✓;  x₁·x₂ = c/a = ${fmt(c / a)} = x² ✓")
-                steps += SolutionStep("Проверка подстановкой", "a·x² + b·x + c = ${fmt(a * x * x + b * x + c)} = 0 ✓")
-                EquationResult("quadratic", steps, listOf(x), "Один корень (кратный): x = ${fmt(x)}")
+                steps += SolutionStep(L10n.t("rootFormulaSingle"), "x = −b / 2a = ${fmt(-b)} / ${fmt(twoA)} = ${fmt(x)}")
+                steps += SolutionStep(L10n.t("vieta"), "x₁ + x₂ = −b/a = ${fmt(-b / a)} = 2x ✓;  x₁·x₂ = c/a = ${fmt(c / a)} = x² ✓")
+                steps += SolutionStep(L10n.t("verification"), "a·x² + b·x + c = ${fmt(a * x * x + b * x + c)} = 0 ✓")
+                EquationResult("quadratic", steps, listOf(x), L10n.t("oneRootSummary", fmt(x)))
             }
             else -> {
-                steps += SolutionStep("Анализ дискриминанта", "D = ${fmt(d)} < 0 → действительных корней нет")
+                steps += SolutionStep(L10n.t("discAnalysis"), L10n.t("discNoRoots", fmt(d)))
                 val re = -b / twoA
                 val im = kotlin.math.sqrt(-d) / twoA
-                steps += SolutionStep("Комплексные корни (справочно)", "x = ${fmt(re)} ± ${fmt(im)}·i")
-                EquationResult("quadratic", steps, emptyList(), "Действительных корней нет (D < 0)")
+                steps += SolutionStep(L10n.t("complexRoots"), "x = ${fmt(re)} ± ${fmt(im)}·i")
+                EquationResult("quadratic", steps, emptyList(), L10n.t("noRealRootsSummary"))
             }
         }
     }
@@ -131,34 +131,34 @@ object EquationSolver {
     // ---------- Cubic ----------
 
     fun solveCubic(a: Double, b: Double, c: Double, d: Double): EquationResult {
-        require(a != 0.0) { "Коэффициент a не может быть равен нулю (это не кубическое уравнение)" }
+        require(a != 0.0) { L10n.t("coefAZero", L10n.t("notAEquation", L10n.t("eqCubic"))) }
         val steps = mutableListOf<SolutionStep>()
-        steps += SolutionStep("Исходное уравнение", fmtCubic(a, b, c, d) + " = 0")
+        steps += SolutionStep(L10n.t("originalEquation"), fmtCubic(a, b, c, d) + " = 0")
 
         // 1) Search for an integer rational root among divisors of d/a.
         val candidate = findIntegerRationalRoot(a, b, c, d)
         if (candidate != null) {
             val r = candidate
-            steps += SolutionStep("Поиск рационального корня", "Целый корень ищем среди делителей свободного члена d/a. Найден: x = ${fmt(r)} (проверка: a·r³+b·r²+c·r+d = ${fmt(a * r * r * r + b * r * r + c * r + d)} = 0 ✓)")
+            steps += SolutionStep(L10n.t("rationalSearch"), L10n.t("rationalFound", fmt(r), fmt(a * r * r * r + b * r * r + c * r + d)))
 
             // Divide: ax³+bx²+cx+d = (x − r)(ax² + Bx + C)
             val B = b + a * r
             val C = c + B * r // = a r² + b r + c
-            steps += SolutionStep("Разложение на множители", "Делим на (x − ${fmt(r)}):  ${fmtCubic(a, b, c, d)} = (x − ${fmt(r)})(${fmt(a)}x² + ${fmt(B)}x + ${fmt(C)})")
+            steps += SolutionStep(L10n.t("factorization"), L10n.t("factorizationDetail", fmt(r), fmtCubic(a, b, c, d), fmt(r), fmt(a), fmt(B), fmt(C)))
 
             // Solve quadratic ax² + Bx + C = 0.
             val qr = solveQuadratic(a, B, C)
-            steps += SolutionStep("Решаем квадратный множитель", qr.summary)
+            steps += SolutionStep(L10n.t("solveQuadraticFactor"), qr.summary)
             qr.steps.forEach { steps += SolutionStep("  ↳ " + it.title, it.detail) }
 
             val roots = (listOf(r) + qr.roots).sorted()
-            val summary = "Корни уравнения: " + roots.joinToString(", ") { "x = ${fmt(it)}" }
-            steps += SolutionStep("Ответ", summary)
+            val summary = L10n.t("equationRoots") + roots.joinToString(", ") { "x = ${fmt(it)}" }
+            steps += SolutionStep(L10n.t("answer"), summary)
             return EquationResult("cubic", steps, roots, summary)
         }
 
         // 2) No rational root: numeric bisection over a generous range.
-        steps += SolutionStep("Поиск рационального корня", "Целого рационального корня среди делителей свободного члена не найдено — применяем численный метод (бисекция)")
+        steps += SolutionStep(L10n.t("rationalSearch"), L10n.t("rationalNotFound"))
         val f: (Double) -> Double = { x -> ((a * x + b) * x + c) * x + d }
         val found = mutableListOf<Double>()
         val lo0 = -1000.0
@@ -188,13 +188,13 @@ object EquationSolver {
         if (prevY == 0.0) addUnique(found, prevX)
 
         return if (found.isEmpty()) {
-            steps += SolutionStep("Результат", "На интервале [−1000, 1000] действительных корней не обнаружено")
-            EquationResult("cubic", steps, emptyList(), "Действительные корни численным методом не найдены (возможно, они комплексные или вне диапазона)")
+            steps += SolutionStep(L10n.t("result"), L10n.t("noRootsFound"))
+            EquationResult("cubic", steps, emptyList(), L10n.t("numericNotFoundSummary"))
         } else {
             val roots = found.sorted()
-            steps += SolutionStep("Численное решение (метод бисекции)", "Найдены приближённые корни: " + roots.joinToString(", ") { "x ≈ ${fmt(it)}" })
-            val summary = "Приближённые корни: " + roots.joinToString(", ") { "x ≈ ${fmt(it)}" }
-            steps += SolutionStep("Ответ", summary + " (численное решение)")
+            steps += SolutionStep(L10n.t("numericSolution"), L10n.t("approxRootsFound") + roots.joinToString(", ") { "x ≈ ${fmt(it)}" })
+            val summary = L10n.t("approxRoots") + roots.joinToString(", ") { "x ≈ ${fmt(it)}" }
+            steps += SolutionStep(L10n.t("answer"), summary + L10n.t("numericSuffix"))
             EquationResult("cubic", steps, roots, summary)
         }
     }

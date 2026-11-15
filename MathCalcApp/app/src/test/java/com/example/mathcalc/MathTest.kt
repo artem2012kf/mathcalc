@@ -2,12 +2,20 @@ package com.example.mathcalc
 
 import com.example.mathcalc.math.Calculator
 import com.example.mathcalc.math.EquationSolver
+import com.example.mathcalc.math.L10n
 import com.example.mathcalc.math.PlotData
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
 
 class MathTest {
+
+    @Before
+    fun setUp() {
+        // Tests assert on Russian step texts / error messages — pin the language.
+        L10n.lang = "ru"
+    }
 
     private fun assertApprox(expected: Double, actual: Double, eps: Double = 1e-9) {
         assertEquals(expected, actual, eps)

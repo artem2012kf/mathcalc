@@ -45,6 +45,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.mathcalc.math.PlotData
+import com.example.mathcalc.settings.Loc
 import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.floor
@@ -90,7 +91,7 @@ fun GraphScreen(modifier: Modifier = Modifier) {
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text(
-            text = "График функции",
+            text = Loc["graphTitle"],
             fontSize = 22.sp,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground
@@ -100,7 +101,7 @@ fun GraphScreen(modifier: Modifier = Modifier) {
         TextField(
             value = expr,
             onValueChange = { expr = it },
-            label = { Text("Функция y = f(x)") },
+            label = { Text(Loc["functionLabel"]) },
             singleLine = true,
             shape = RoundedCornerShape(20.dp),
             colors = TextFieldDefaults.colors(
@@ -123,7 +124,7 @@ fun GraphScreen(modifier: Modifier = Modifier) {
             TextField(
                 value = xMinText,
                 onValueChange = { xMinText = it },
-                label = { Text("xMin") },
+                label = { Text(Loc["xMin"]) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 singleLine = true,
                 shape = RoundedCornerShape(16.dp),
@@ -141,7 +142,7 @@ fun GraphScreen(modifier: Modifier = Modifier) {
             TextField(
                 value = xMaxText,
                 onValueChange = { xMaxText = it },
-                label = { Text("xMax") },
+                label = { Text(Loc["xMax"]) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 singleLine = true,
                 shape = RoundedCornerShape(16.dp),
@@ -177,7 +178,7 @@ fun GraphScreen(modifier: Modifier = Modifier) {
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "Построить",
+                    text = Loc["plot"],
                     color = Color.White,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 15.sp
@@ -207,7 +208,7 @@ fun GraphScreen(modifier: Modifier = Modifier) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            ZoomPill(label = "+", contentDesc = "Приблизить") {
+            ZoomPill(label = "+", contentDesc = Loc["zoomIn"]) {
                 val mid = (xMin + xMax) / 2.0
                 val half = (xMax - xMin) / 2.0 * 0.5
                 xMin = mid - half
@@ -215,7 +216,7 @@ fun GraphScreen(modifier: Modifier = Modifier) {
                 xMinText = formatAxisNum(xMin)
                 xMaxText = formatAxisNum(xMax)
             }
-            ZoomPill(label = "−", contentDesc = "Отдалить") {
+            ZoomPill(label = "−", contentDesc = Loc["zoomOut"]) {
                 val mid = (xMin + xMax) / 2.0
                 val half = (xMax - xMin) / 2.0 * 2.0
                 xMin = mid - half
@@ -223,7 +224,7 @@ fun GraphScreen(modifier: Modifier = Modifier) {
                 xMinText = formatAxisNum(xMin)
                 xMaxText = formatAxisNum(xMax)
             }
-            ZoomPill(label = "Сброс", contentDesc = "Сбросить масштаб") {
+            ZoomPill(label = Loc["reset"], contentDesc = Loc["resetZoom"]) {
                 xMin = -10.0
                 xMax = 10.0
                 xMinText = "-10"
@@ -465,7 +466,7 @@ private fun ZerosInfo(expr: String, xMin: Double, xMax: Double) {
     ) {
         Column {
             Text(
-                text = "Нули функции на [$xMin; $xMax]:",
+                text = Loc["zerosOn"].format(formatAxisNum(xMin), formatAxisNum(xMax)),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface

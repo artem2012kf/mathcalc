@@ -47,11 +47,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.mathcalc.math.EquationResult
 import com.example.mathcalc.math.EquationSolver
+import com.example.mathcalc.settings.Loc
 
-private enum class EqType(val label: String) {
-    LINEAR("Линейное ax+b=0"),
-    QUADRATIC("Квадратное ax²+bx+c=0"),
-    CUBIC("Кубическое ax³+bx²+cx+d=0")
+private enum class EqType {
+    LINEAR, QUADRATIC, CUBIC
 }
 
 @Composable
@@ -116,7 +115,9 @@ fun EquationScreen(modifier: Modifier = Modifier) {
                 EqType.CUBIC -> EquationSolver.solveCubic(parseCoeff(a), parseCoeff(b), parseCoeff(c), parseCoeff(d))
             }
         } catch (e: Exception) {
-            error = "Не удалось решить уравнение: ${e.message ?: "неизвестная ошибка"}"
+            error = Loc["solveFailed"].let { fmt ->
+                fmt.format(e.message ?: Loc["unknownError"])
+            }
         }
     }
 
@@ -128,7 +129,7 @@ fun EquationScreen(modifier: Modifier = Modifier) {
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text(
-            text = "Решение уравнений",
+            text = Loc["solveEquationsTitle"],
             fontSize = 22.sp,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground
@@ -155,9 +156,9 @@ fun EquationScreen(modifier: Modifier = Modifier) {
                     label = {
                         Text(
                             text = when (type) {
-                                EqType.LINEAR -> "Линейное"
-                                EqType.QUADRATIC -> "Квадратное"
-                                EqType.CUBIC -> "Кубическое"
+                                EqType.LINEAR -> Loc["eqLinearShort"]
+                                EqType.QUADRATIC -> Loc["eqQuadraticShort"]
+                                EqType.CUBIC -> Loc["eqCubicShort"]
                             },
                             fontSize = 12.sp,
                             fontWeight = FontWeight.SemiBold
@@ -169,7 +170,11 @@ fun EquationScreen(modifier: Modifier = Modifier) {
 
         // Full type name as subtitle
         Text(
-            text = selected.label,
+            text = when (selected) {
+                EqType.LINEAR -> Loc["eqLinearFull"]
+                EqType.QUADRATIC -> Loc["eqQuadraticFull"]
+                EqType.CUBIC -> Loc["eqCubicFull"]
+            },
             fontSize = 14.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -214,7 +219,7 @@ fun EquationScreen(modifier: Modifier = Modifier) {
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "Решить",
+                text = Loc["solve"],
                 color = Color.White,
                 fontSize = 17.sp,
                 fontWeight = FontWeight.Bold
@@ -271,7 +276,7 @@ fun EquationScreen(modifier: Modifier = Modifier) {
                 ) {
                     Column {
                         Text(
-                            text = "Корни:",
+                            text = Loc["roots"],
                             fontWeight = FontWeight.Bold,
                             fontSize = 15.sp,
                             color = Teal

@@ -19,7 +19,7 @@ object Calculator {
         fun parse(): Double {
             val result = parseExpression()
             skipWhitespace()
-            if (pos < input.length) throw IllegalArgumentException("Лишние символы в выражении: «${input.substring(pos)}»")
+            if (pos < input.length) throw IllegalArgumentException(L10n.t("extraSymbols", input.substring(pos)))
             return result
         }
 
@@ -35,7 +35,7 @@ object Calculator {
         private fun consume(expected: Char) {
             skipWhitespace()
             if (pos >= input.length || input[pos] != expected) {
-                throw IllegalArgumentException("Ожидался символ «$expected» на позиции ${pos + 1}")
+                throw IllegalArgumentException(L10n.t("expectedChar", expected, pos + 1))
             }
             pos++
         }
@@ -99,7 +99,7 @@ object Calculator {
 
         private fun parsePrimary(): Double {
             skipWhitespace()
-            if (pos >= input.length) throw IllegalArgumentException("Неожиданный конец выражения")
+            if (pos >= input.length) throw IllegalArgumentException(L10n.t("unexpectedEnd"))
 
             val c = input[pos]
 
@@ -165,7 +165,7 @@ object Calculator {
                     kotlin.math.PI
                 }
                 c == 'e' || c == 'E' -> { pos++; kotlin.math.E }
-                else -> throw IllegalArgumentException("Некорректный символ «$c» на позиции ${pos + 1}")
+                else -> throw IllegalArgumentException(L10n.t("invalidChar", c, pos + 1))
             }
         }
 
@@ -174,11 +174,11 @@ object Calculator {
             while (pos < input.length && (input[pos].isDigit() || input[pos] == '.')) pos++
             val token = input.substring(start, pos)
             return token.toDoubleOrNull()
-                ?: throw IllegalArgumentException("Некорректное число «$token» на позиции ${start + 1}")
+                ?: throw IllegalArgumentException(L10n.t("invalidNumber", token, start + 1))
         }
 
         private fun sqrtChecked(arg: Double): Double {
-            if (arg < 0) throw IllegalArgumentException("Нельзя извлечь квадратный корень из отрицательного числа: $arg")
+            if (arg < 0) throw IllegalArgumentException(L10n.t("sqrtNegative", arg))
             return kotlin.math.sqrt(arg)
         }
 
@@ -192,10 +192,10 @@ object Calculator {
 
     /** Evaluates an expression where occurrences of the variable x are bound to [x]. */
     fun evaluate(expr: String, x: Double): Double {
-        if (expr.isBlank()) throw IllegalArgumentException("Выражение не может быть пустым")
+        if (expr.isBlank()) throw IllegalArgumentException(L10n.t("emptyExpr"))
         val value = Parser(expr, x).parse()
         if (value.isNaN() || value.isInfinite()) {
-            throw IllegalArgumentException("Результат выражения не определён")
+            throw IllegalArgumentException(L10n.t("undefinedResult"))
         }
         return value
     }

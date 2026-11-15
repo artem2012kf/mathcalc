@@ -42,6 +42,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.mathcalc.math.Calculator
+import com.example.mathcalc.settings.AppSettings
+import com.example.mathcalc.settings.Loc
 
 private data class HistoryEntry(val expression: String, val result: String)
 
@@ -61,7 +63,7 @@ fun CalculatorScreen(modifier: Modifier = Modifier) {
     var expression by remember { mutableStateOf("") }
     val history = remember { mutableStateListOf<HistoryEntry>() }
 
-    val preview: String = remember(expression) {
+    val preview: String = remember(expression, AppSettings.language) {
         if (expression.isBlank()) ""
         else try {
             "=" + Calculator.formatNumber(Calculator.evaluate(expression))
@@ -69,13 +71,13 @@ fun CalculatorScreen(modifier: Modifier = Modifier) {
             ""
         }
     }
-    val errorText: String? = remember(expression) {
+    val errorText: String? = remember(expression, AppSettings.language) {
         if (expression.isBlank()) null
         else try {
             Calculator.evaluate(expression)
             null
         } catch (e: Exception) {
-            "Ошибка в выражении"
+            Loc["errorInExpression"]
         }
     }
 
@@ -165,7 +167,7 @@ fun CalculatorScreen(modifier: Modifier = Modifier) {
                     modifier = Modifier.size(18.dp)
                 )
                 Text(
-                    text = "История",
+                    text = Loc["history"],
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurfaceVariant

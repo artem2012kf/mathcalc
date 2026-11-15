@@ -16,7 +16,7 @@ object PlotData {
         xMax: Double,
         points: Int = 400,
     ): List<Pair<Double, Double?>> {
-        require(points >= 2) { "Нужно минимум 2 точки для построения графика" }
+        require(points >= 2) { L10n.t("needPointsPlot") }
         val result = ArrayList<Pair<Double, Double?>>(points + 1)
         var lastFiniteY: Double? = null
         var lastX: Double? = null
@@ -57,7 +57,7 @@ object PlotData {
         xMax: Double,
         points: Int = 1000,
     ): List<Double> {
-        require(points >= 2) { "Нужно минимум 2 точки для поиска корней" }
+        require(points >= 2) { L10n.t("needPointsZeros") }
         val roots = mutableListOf<Double>()
 
         fun f(x: Double): Double? = try {

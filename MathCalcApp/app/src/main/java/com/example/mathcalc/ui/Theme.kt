@@ -60,23 +60,32 @@ private val DarkColors = darkColorScheme(
 )
 
 private val LightColors = lightColorScheme(
-    primary = Color(0xFF5B4FD4),
+    primary = Indigo,
     onPrimary = Color.White,
     primaryContainer = Color(0xFFE4E0FF),
     onPrimaryContainer = Color(0xFF1D1254),
-    secondary = Color(0xFF159E8A),
+    secondary = Teal,
     onSecondary = Color.White,
     secondaryContainer = Color(0xFFCDF2EA),
     onSecondaryContainer = Color(0xFF003B33),
-    background = Color(0xFFF7F6FB),
+    tertiary = Violet,
+    onTertiary = Color(0xFF1B1140),
+    tertiaryContainer = Color(0xFFE4DEFF),
+    onTertiaryContainer = Color(0xFF1D1254),
+    background = Color(0xFFF6F5FA),
     onBackground = Color(0xFF1A1B2E),
     surface = Color.White,
     onSurface = Color(0xFF1A1B2E),
     surfaceVariant = Color(0xFFE8E6F2),
     onSurfaceVariant = Color(0xFF4B4D60),
-    error = Color(0xFFB3261E),
+    surfaceContainer = Color.White,
+    surfaceContainerHigh = Color(0xFFF1EFF7),
+    error = Coral,
     onError = Color.White,
-    outline = Color(0xFF7C7E96)
+    errorContainer = Color(0xFFFFD9DE),
+    onErrorContainer = Color(0xFF3B0810),
+    outline = Color(0xFF7C7E96),
+    outlineVariant = Color(0xFFDCDAE6)
 )
 
 // Rounded corners everywhere (20dp+ for large, 16dp for medium/small elements)
