@@ -61,9 +61,21 @@ object Calculator {
                         val divisor = parseFactor()
                         value /= divisor
                     }
-                    else -> return value
+                    // Implicit multiplication: 5x, 2(3+1), 3√9, 2sin(x), x(x+1)
+                    '(', 'x', 'X', '√', 'π' -> value *= parseFactor()
+                    else -> {
+                        if (startsIdentifier()) value *= parseFactor() else return value
+                    }
                 }
             }
+        }
+
+        /** True if a named token (sin/cos/tan/sqrt/pi/e) starts at the current position. */
+        private fun startsIdentifier(): Boolean {
+            val rest = input.substring(pos)
+            return listOf("sin", "cos", "tan", "sqrt", "pi").any {
+                rest.startsWith(it, ignoreCase = true)
+            } || input.getOrNull(pos)?.lowercaseChar() == 'e'
         }
 
         private fun parseFactor(): Double {
