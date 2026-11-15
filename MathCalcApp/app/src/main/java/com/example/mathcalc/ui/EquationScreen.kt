@@ -79,8 +79,8 @@ private fun coeffField(
         singleLine = true,
         shape = RoundedCornerShape(16.dp),
         colors = TextFieldDefaults.colors(
-            focusedContainerColor = NavyField,
-            unfocusedContainerColor = NavyField,
+            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
             focusedIndicatorColor = Indigo,
             unfocusedIndicatorColor = Color.Transparent,
             cursorColor = Teal,
@@ -367,7 +367,7 @@ private fun StepTimelineItem(
                     modifier = Modifier
                         .padding(top = 4.dp)
                         .fillMaxWidth()
-                        .background(NavyField, RoundedCornerShape(12.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
                         .padding(10.dp)
                 )
             }
