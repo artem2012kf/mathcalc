@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.Functions
 import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.filled.Percent
 import androidx.compose.material.icons.filled.ShowChart
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -46,16 +47,18 @@ import com.example.mathcalc.settings.AppSettings
 import com.example.mathcalc.settings.Loc
 import com.example.mathcalc.ui.CalculatorScreen
 import com.example.mathcalc.ui.EquationScreen
+import com.example.mathcalc.ui.ExamplesScreen
 import com.example.mathcalc.ui.GraphScreen
 import com.example.mathcalc.ui.MathCalcTheme
 
 sealed class Screen(val route: String, val labelKey: String, val icon: ImageVector) {
     data object Calculator : Screen("calculator", "navCalc", Icons.Filled.Calculate)
     data object Equations : Screen("equations", "navEquations", Icons.Filled.Functions)
+    data object Examples : Screen("examples", "navExamples", Icons.Filled.Percent)
     data object Graph : Screen("graph", "navGraph", Icons.Filled.ShowChart)
 }
 
-val bottomScreens = listOf(Screen.Calculator, Screen.Equations, Screen.Graph)
+val bottomScreens = listOf(Screen.Calculator, Screen.Equations, Screen.Examples, Screen.Graph)
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -186,6 +189,7 @@ fun MainApp() {
             ) {
                 composable(Screen.Calculator.route) { CalculatorScreen() }
                 composable(Screen.Equations.route) { EquationScreen() }
+                composable(Screen.Examples.route) { ExamplesScreen() }
                 composable(Screen.Graph.route) { GraphScreen() }
             }
         }

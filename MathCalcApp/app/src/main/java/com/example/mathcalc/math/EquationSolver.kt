@@ -11,6 +11,14 @@ data class EquationResult(
 
 object EquationSolver {
 
+    /** Dispatches on the coefficient count: [a,b] linear, [a,b,c] quadratic, [a,b,c,d] cubic. */
+    fun solvePolynomial(coefs: List<Double>): EquationResult = when (coefs.size) {
+        2 -> solveLinear(coefs[0], coefs[1])
+        3 -> solveQuadratic(coefs[0], coefs[1], coefs[2])
+        4 -> solveCubic(coefs[0], coefs[1], coefs[2], coefs[3])
+        else -> throw IllegalArgumentException(L10n.t("needCoefs", "?", coefs.size))
+    }
+
     fun solve(type: String, coefs: List<Double>): EquationResult = when (type.lowercase()) {
         "linear" -> {
             require(coefs.size >= 2) { L10n.t("needCoefs", L10n.t("eqLinear"), 2) }

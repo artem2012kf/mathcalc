@@ -1,5 +1,9 @@
 package com.example.mathcalc.ui
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -7,6 +11,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -37,6 +42,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -45,9 +52,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.FileProvider
 import com.example.mathcalc.math.EquationResult
 import com.example.mathcalc.math.EquationSolver
+import com.example.mathcalc.math.PhotoEquationParser
 import com.example.mathcalc.settings.Loc
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions
+import java.io.File
 
 private enum class EqType {
     LINEAR, QUADRATIC, CUBIC
@@ -104,6 +117,57 @@ fun EquationScreen(modifier: Modifier = Modifier) {
     var d by remember { mutableStateOf("0") }
     var result by remember { mutableStateOf<EquationResult?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
+
+    // ----- Photo equation recognition (ML Kit, bundled model, network-free) -----
+    val context = LocalContext.current
+    var cameraUri by remember { mutableStateOf<Uri?>(null) }
+    var photoEquation by remember { mutableStateOf<String?>(null) }
+    var photoError by remember { mutableStateOf<String?>(null) }
+
+    fun recognizePhoto(uri: Uri) {
+        photoEquation = null
+        photoError = null
+        result = null
+        error = null
+        try {
+            val image = InputImage.fromFilePath(context, uri)
+            val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+            recognizer.process(image)
+                .addOnSuccessListener { visionText ->
+                    val parsed = PhotoEquationParser.parseEquation(visionText.text)
+                    if (parsed == null) {
+                        photoError = Loc["photoError"]
+                    } else {
+                        val (degree, coefs, cleaned) = parsed
+                        photoEquation = cleaned
+                        try {
+                            result = EquationSolver.solvePolynomial(coefs)
+                        } catch (e: Exception) {
+                            error = Loc["solveFailed"].let { fmt -> fmt.format(e.message ?: Loc["unknownError"]) }
+                        }
+                    }
+                }
+                .addOnFailureListener { photoError = Loc["photoError"] }
+        } catch (e: Exception) {
+            photoError = Loc["photoError"]
+        }
+    }
+
+    val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        if (uri != null) recognizePhoto(uri)
+    }
+    val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { ok ->
+        val uri = cameraUri
+        if (ok && uri != null) recognizePhoto(uri)
+    }
+
+    fun launchCamera() {
+        val dir = File(context.cacheDir, "photos").apply { mkdirs() }
+        val photoFile = File(dir, "equation_${System.currentTimeMillis()}.jpg")
+        val uri = FileProvider.getUriForFile(context, context.packageName + ".fileprovider", photoFile)
+        cameraUri = uri
+        cameraLauncher.launch(uri)
+    }
 
     fun solve() {
         result = null
@@ -226,6 +290,70 @@ fun EquationScreen(modifier: Modifier = Modifier) {
             )
         }
 
+        // Photo recognition: gallery / camera (no runtime permissions needed)
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(
+                text = Loc["photo"],
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(50))
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .clickable {
+                        galleryLauncher.launch(
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                        )
+                    }
+                    .padding(horizontal = 14.dp, vertical = 8.dp)
+            ) {
+                Text(
+                    text = Loc["fromGallery"],
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(50))
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .clickable { launchCamera() }
+                    .padding(horizontal = 14.dp, vertical = 8.dp)
+            ) {
+                Text(
+                    text = Loc["camera"],
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        }
+
+        photoError?.let {
+            Text(
+                text = it,
+                color = MaterialTheme.colorScheme.error,
+                fontSize = 14.sp
+            )
+        }
+
+        photoEquation?.let { recognized ->
+            Text(
+                text = Loc["photoSource"].format(recognized),
+                fontSize = 13.sp,
+                fontFamily = FontFamily.Monospace,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
+                    .padding(10.dp)
+            )
+        }
+
         error?.let {
             Text(
                 text = it,
@@ -314,7 +442,7 @@ fun EquationScreen(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun StepTimelineItem(
+internal fun StepTimelineItem(
     title: String,
     detail: String,
     isLast: Boolean,
