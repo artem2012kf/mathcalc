@@ -75,8 +75,13 @@ object PlotData {
                 if (prevY == 0.0) {
                     addUnique(roots, prevX)
                 } else if (prevY * y < 0) {
-                    // Linear interpolation refinement.
-                    val root = prevX - prevY * (x - prevX) / (y - prevY)
+                    // Linear interpolation refinement, then Newton steps for precision.
+                    var root = prevX - prevY * (x - prevX) / (y - prevY)
+                    repeat(4) {
+                        val fy = f(root) ?: return@repeat
+                        val df = ((f(root + 1e-7) ?: fy) - fy) / 1e-7
+                        if (df != 0.0) root -= fy / df
+                    }
                     addUnique(roots, root)
                 }
             }

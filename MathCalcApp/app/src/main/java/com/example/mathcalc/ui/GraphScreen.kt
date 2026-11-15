@@ -2,27 +2,26 @@ package com.example.mathcalc.ui
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
@@ -34,10 +33,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -48,6 +50,9 @@ import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.log10
 import kotlin.math.pow
+
+private val CanvasBg = Color(0xFF12141F)
+private val ZeroRed = Color(0xFFFF5A6E)
 
 private fun niceStep(range: Double): Double {
     if (range <= 0.0) return 1.0
@@ -82,7 +87,7 @@ fun GraphScreen(modifier: Modifier = Modifier) {
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text(
             text = "График функции",
@@ -91,82 +96,96 @@ fun GraphScreen(modifier: Modifier = Modifier) {
             color = MaterialTheme.colorScheme.onBackground
         )
 
-        OutlinedTextField(
+        // ---------- Formula bar card ----------
+        TextField(
             value = expr,
             onValueChange = { expr = it },
             label = { Text("Функция y = f(x)") },
             singleLine = true,
+            shape = RoundedCornerShape(20.dp),
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = NavyField,
+                unfocusedContainerColor = NavyField,
+                focusedIndicatorColor = Indigo,
+                unfocusedIndicatorColor = Color.Transparent,
+                cursorColor = Teal,
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+            ),
+            textStyle = androidx.compose.ui.text.TextStyle(
+                fontFamily = FontFamily.Monospace,
+                fontSize = 16.sp
+            ),
             modifier = Modifier.fillMaxWidth()
         )
 
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedTextField(
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            TextField(
                 value = xMinText,
                 onValueChange = { xMinText = it },
                 label = { Text("xMin") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 singleLine = true,
+                shape = RoundedCornerShape(16.dp),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = NavyField,
+                    unfocusedContainerColor = NavyField,
+                    focusedIndicatorColor = Indigo,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    cursorColor = Teal,
+                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                ),
                 modifier = Modifier.weight(1f)
             )
-            OutlinedTextField(
+            TextField(
                 value = xMaxText,
                 onValueChange = { xMaxText = it },
                 label = { Text("xMax") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 singleLine = true,
+                shape = RoundedCornerShape(16.dp),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = NavyField,
+                    unfocusedContainerColor = NavyField,
+                    focusedIndicatorColor = Indigo,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    cursorColor = Teal,
+                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                ),
                 modifier = Modifier.weight(1f)
             )
-            Button(
-                onClick = {
-                    val newMin = parseDouble(xMinText, xMin)
-                    val newMax = parseDouble(xMaxText, xMax)
-                    if (newMin < newMax) {
-                        xMin = newMin
-                        xMax = newMax
+            Box(
+                modifier = Modifier
+                    .align(Alignment.CenterVertically)
+                    .height(52.dp)
+                    .background(
+                        brush = androidx.compose.ui.graphics.Brush.verticalGradient(listOf(Indigo, Violet)),
+                        shape = RoundedCornerShape(20.dp)
+                    )
+                    .clickable {
+                        val newMin = parseDouble(xMinText, xMin)
+                        val newMax = parseDouble(xMaxText, xMax)
+                        if (newMin < newMax) {
+                            xMin = newMin
+                            xMax = newMax
+                        }
+                        appliedExpr = expr
                     }
-                    appliedExpr = expr
-                },
-                modifier = Modifier.align(Alignment.CenterVertically)
+                    .padding(horizontal = 20.dp),
+                contentAlignment = Alignment.Center
             ) {
-                Text("Построить")
+                Text(
+                    text = "Построить",
+                    color = Color.White,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 15.sp
+                )
             }
         }
 
-        // Zoom controls
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(
-                text = "Масштаб:",
-                fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            FilledTonalButton(onClick = {
-                val mid = (xMin + xMax) / 2.0
-                val half = (xMax - xMin) / 2.0 * 0.5
-                xMin = mid - half
-                xMax = mid + half
-                xMinText = formatAxisNum(xMin)
-                xMaxText = formatAxisNum(xMax)
-            }) { Text("+") }
-            FilledTonalButton(onClick = {
-                val mid = (xMin + xMax) / 2.0
-                val half = (xMax - xMin) / 2.0 * 2.0
-                xMin = mid - half
-                xMax = mid + half
-                xMinText = formatAxisNum(xMin)
-                xMaxText = formatAxisNum(xMax)
-            }) { Text("−") }
-            Spacer(Modifier.width(4.dp))
-            FilledTonalButton(onClick = {
-                xMin = -10.0
-                xMax = 10.0
-                xMinText = "-10"
-                xMaxText = "10"
-            }) { Text("Сброс") }
-        }
-
+        // ---------- Canvas card ----------
         GraphCanvas(
             expr = appliedExpr,
             xMin = xMin,
@@ -183,7 +202,60 @@ fun GraphScreen(modifier: Modifier = Modifier) {
             }
         )
 
+        // ---------- Zoom controls: floating pill buttons ----------
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            ZoomPill(label = "+", contentDesc = "Приблизить") {
+                val mid = (xMin + xMax) / 2.0
+                val half = (xMax - xMin) / 2.0 * 0.5
+                xMin = mid - half
+                xMax = mid + half
+                xMinText = formatAxisNum(xMin)
+                xMaxText = formatAxisNum(xMax)
+            }
+            ZoomPill(label = "−", contentDesc = "Отдалить") {
+                val mid = (xMin + xMax) / 2.0
+                val half = (xMax - xMin) / 2.0 * 2.0
+                xMin = mid - half
+                xMax = mid + half
+                xMinText = formatAxisNum(xMin)
+                xMaxText = formatAxisNum(xMax)
+            }
+            ZoomPill(label = "Сброс", contentDesc = "Сбросить масштаб") {
+                xMin = -10.0
+                xMax = 10.0
+                xMinText = "-10"
+                xMaxText = "10"
+            }
+        }
+
         ZerosInfo(expr = appliedExpr, xMin = xMin, xMax = xMax)
+    }
+}
+
+@Composable
+private fun ZoomPill(
+    label: String,
+    contentDesc: String,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .background(
+                MaterialTheme.colorScheme.surfaceVariant,
+                RoundedCornerShape(50)
+            )
+            .clickable(onClick = onClick)
+            .padding(horizontal = 18.dp, vertical = 10.dp)
+    ) {
+        Text(
+            text = label,
+            color = MaterialTheme.colorScheme.onSurface,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 16.sp
+        )
     }
 }
 
@@ -231,12 +303,11 @@ private fun GraphCanvas(
     val yMin = yMinYMax.first
     val yMax = yMinYMax.second
 
-    val labelColor = MaterialTheme.colorScheme.onSurfaceVariant
-    val gridColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.25f)
-    val axisColor = MaterialTheme.colorScheme.onSurfaceVariant
-    val curveColor = MaterialTheme.colorScheme.primary
-    val cardColor = MaterialTheme.colorScheme.surface
-    val zeroColor = Color(0xFFE53935)
+    val labelColor = TextMuted
+    val gridColor = Color(0xFF2A2D42)
+    val axisColor = Color(0xFF565A78)
+    val curveColor = Indigo
+    val zeroColor = ZeroRed
     val density = LocalDensity.current
     val labelPx = with(density) { 11.sp.toPx() }
     val labelPaint = remember(labelColor) {
@@ -253,15 +324,14 @@ private fun GraphCanvas(
         }
     }
 
-    Card(
-        modifier = modifier,
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = cardColor)
+    Box(
+        modifier = modifier
+            .background(CanvasBg, RoundedCornerShape(20.dp))
     ) {
         Canvas(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(8.dp)
+                .padding(12.dp)
                 .pointerInput(xMin, xMax) {
                     var totalDrag = 0f
                     var lastX = 0f
@@ -279,7 +349,7 @@ private fun GraphCanvas(
             fun xToPx(x: Double): Float = ((x - xMin) / (xMax - xMin) * w).toFloat()
             fun yToPx(y: Double): Float = ((yMax - y) / (yMax - yMin) * h).toFloat()
 
-            // Grid + tick labels
+            // Grid + tick labels (subtle)
             val step = niceStep(xMax - xMin)
             val first = ceil(xMin / step) * step
             var tick = first
@@ -321,37 +391,54 @@ private fun GraphCanvas(
                 drawLine(axisColor, Offset(x0px + 5f, 12f), Offset(x0px, 0f), 2f)
             }
 
-            // Curve: skip null segments (breaks at discontinuities)
-            var segment = Path()
-            var started = false
-            points.forEach { (x, y) ->
-                if (y == null || !y.isFinite()) {
-                    if (started) drawPath(segment, curveColor, style = Stroke(3f))
-                    segment = Path()
-                    started = false
-                } else {
-                    val px = xToPx(x)
-                    val py = yToPx(y)
-                    if (!started) {
-                        segment.moveTo(px, py)
-                        started = true
+            // Curve: glowing — wide translucent halo pass, then crisp main stroke.
+            // Segments are broken at discontinuities (null y).
+            val haloStyle = Stroke(
+                width = 12f,
+                cap = StrokeCap.Round,
+                join = StrokeJoin.Round
+            )
+            val mainStyle = Stroke(
+                width = 3.5f,
+                cap = StrokeCap.Round,
+                join = StrokeJoin.Round
+            )
+            fun drawSegments(color: Color, style: Stroke) {
+                var segment = Path()
+                var started = false
+                points.forEach { (x, y) ->
+                    if (y == null || !y.isFinite()) {
+                        if (started) drawPath(segment, color, style = style)
+                        segment = Path()
+                        started = false
                     } else {
-                        segment.lineTo(px, py)
+                        val px = xToPx(x)
+                        val py = yToPx(y)
+                        if (!started) {
+                            segment.moveTo(px, py)
+                            started = true
+                        } else {
+                            segment.lineTo(px, py)
+                        }
                     }
                 }
+                if (started) drawPath(segment, color, style = style)
             }
-            if (started) drawPath(segment, curveColor, style = Stroke(3f))
+            drawSegments(curveColor.copy(alpha = 0.22f), haloStyle)
+            drawSegments(curveColor, mainStyle)
 
-            // Zeros: red dots with labels
+            // Zeros: glowing red dots with labels
             zeros.forEach { z ->
                 val px = xToPx(z)
                 val py = yToPx(0.0)
                 if (py in 0f..h && px in 0f..w) {
-                    drawCircle(zeroColor, radius = 6f, center = Offset(px, py))
+                    drawCircle(zeroColor.copy(alpha = 0.25f), radius = 13f, center = Offset(px, py))
+                    drawCircle(zeroColor.copy(alpha = 0.45f), radius = 9f, center = Offset(px, py))
+                    drawCircle(zeroColor, radius = 5f, center = Offset(px, py))
                     drawContext.canvas.nativeCanvas.drawText(
                         formatAxisNum(Math.round(z * 1e4) / 1e4),
                         px,
-                        py - 10f,
+                        py - 12f,
                         labelPaint
                     )
                 }
@@ -370,14 +457,13 @@ private fun ZerosInfo(expr: String, xMin: Double, xMax: Double) {
         }
     }
     if (zeros.isEmpty()) return
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(20.dp))
+            .padding(16.dp)
     ) {
-        Column(modifier = Modifier.padding(12.dp)) {
+        Column {
             Text(
                 text = "Нули функции на [$xMin; $xMax]:",
                 fontSize = 14.sp,
@@ -386,9 +472,10 @@ private fun ZerosInfo(expr: String, xMin: Double, xMax: Double) {
             )
             Text(
                 text = zeros.joinToString(", ") { formatAxisNum(Math.round(it * 1e4) / 1e4) },
-                fontSize = 15.sp,
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.SemiBold,
+                fontSize = 16.sp,
+                color = Teal,
+                fontWeight = FontWeight.Bold,
+                fontFamily = FontFamily.Monospace,
                 modifier = Modifier.padding(top = 4.dp)
             )
         }

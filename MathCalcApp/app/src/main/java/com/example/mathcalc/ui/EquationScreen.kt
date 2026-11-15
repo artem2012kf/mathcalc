@@ -1,31 +1,46 @@
 package com.example.mathcalc.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -46,7 +61,7 @@ private fun coeffField(
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    OutlinedTextField(
+    TextField(
         value = value,
         onValueChange = { newText ->
             // allow digits, minus and one decimal separator (both , and .)
@@ -54,9 +69,25 @@ private fun coeffField(
                 onValueChange(newText)
             }
         },
-        label = { Text(label) },
+        label = {
+            Text(
+                text = label,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
+        },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
         singleLine = true,
+        shape = RoundedCornerShape(16.dp),
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = NavyField,
+            unfocusedContainerColor = NavyField,
+            focusedIndicatorColor = Indigo,
+            unfocusedIndicatorColor = Color.Transparent,
+            cursorColor = Teal,
+            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+        ),
         modifier = modifier
     )
 }
@@ -103,13 +134,24 @@ fun EquationScreen(modifier: Modifier = Modifier) {
             color = MaterialTheme.colorScheme.onBackground
         )
 
-        // Type selector
-        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+        // Type selector: pill chips via styled segmented buttons
+        SingleChoiceSegmentedButtonRow(
+            modifier = Modifier.fillMaxWidth(),
+            space = 0.dp
+        ) {
             EqType.entries.forEachIndexed { index, type ->
                 SegmentedButton(
                     selected = selected == type,
                     onClick = { selected = type },
                     shape = SegmentedButtonDefaults.itemShape(index, EqType.entries.size),
+                    colors = SegmentedButtonDefaults.colors(
+                        activeContainerColor = MaterialTheme.colorScheme.primary,
+                        activeContentColor = Color.White,
+                        activeBorderColor = Color.Transparent,
+                        inactiveContainerColor = MaterialTheme.colorScheme.surface,
+                        inactiveContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        inactiveBorderColor = Color.Transparent
+                    ),
                     label = {
                         Text(
                             text = when (type) {
@@ -117,7 +159,8 @@ fun EquationScreen(modifier: Modifier = Modifier) {
                                 EqType.QUADRATIC -> "Квадратное"
                                 EqType.CUBIC -> "Кубическое"
                             },
-                            fontSize = 12.sp
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold
                         )
                     }
                 )
@@ -134,31 +177,48 @@ fun EquationScreen(modifier: Modifier = Modifier) {
         // Coefficient fields
         when (selected) {
             EqType.LINEAR -> {
-                coeffField("a", a, { a = it })
-                coeffField("b", b, { b = it })
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    coeffField("a", a, { a = it }, Modifier.weight(1f))
+                    coeffField("b", b, { b = it }, Modifier.weight(1f))
+                }
             }
             EqType.QUADRATIC -> {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     coeffField("a", a, { a = it }, Modifier.weight(1f))
                     coeffField("b", b, { b = it }, Modifier.weight(1f))
                     coeffField("c", c, { c = it }, Modifier.weight(1f))
                 }
             }
             EqType.CUBIC -> {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     coeffField("a", a, { a = it }, Modifier.weight(1f))
                     coeffField("b", b, { b = it }, Modifier.weight(1f))
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     coeffField("c", c, { c = it }, Modifier.weight(1f))
                     coeffField("d", d, { d = it }, Modifier.weight(1f))
                 }
             }
         }
 
-        Button(
-            onClick = { solve() },
-            modifier = Modifier.fillMaxWidth()
+        // Solve button: full-width, tall, vertical gradient
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+                .background(
+                    brush = Brush.verticalGradient(listOf(Indigo, Violet)),
+                    shape = RoundedCornerShape(20.dp)
+                )
+                .clickable { solve() },
+            contentAlignment = Alignment.Center
         ) {
-            Text("Решить")
+            Text(
+                text = "Решить",
+                color = Color.White,
+                fontSize = 17.sp,
+                fontWeight = FontWeight.Bold
+            )
         }
 
         error?.let {
@@ -176,13 +236,13 @@ fun EquationScreen(modifier: Modifier = Modifier) {
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer
                 ),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(20.dp)
             ) {
-                Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(
                         text = res.type,
                         fontSize = 13.sp,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
                     )
                     Text(
                         text = res.summary,
@@ -193,28 +253,36 @@ fun EquationScreen(modifier: Modifier = Modifier) {
                 }
             }
 
-            // Roots highlighted card
+            // Roots highlighted gradient card
             if (res.roots.isNotEmpty()) {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = RootGreen.copy(alpha = 0.15f)
-                    ),
-                    shape = RoundedCornerShape(12.dp)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            brush = Brush.horizontalGradient(
+                                listOf(
+                                    MaterialTheme.colorScheme.secondaryContainer,
+                                    NavySurfaceHigh
+                                )
+                            ),
+                            shape = RoundedCornerShape(20.dp)
+                        )
+                        .padding(16.dp)
                 ) {
-                    Column(modifier = Modifier.padding(14.dp)) {
+                    Column {
                         Text(
                             text = "Корни:",
                             fontWeight = FontWeight.Bold,
                             fontSize = 15.sp,
-                            color = MaterialTheme.colorScheme.onBackground
+                            color = Teal
                         )
                         res.roots.forEachIndexed { i, r ->
                             Text(
                                 text = "x${i + 1} = ${formatRoot(r)}",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = RootGreen,
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold,
+                                fontFamily = FontFamily.Monospace,
+                                color = MaterialTheme.colorScheme.onBackground,
                                 modifier = Modifier.padding(top = 4.dp)
                             )
                         }
@@ -222,30 +290,81 @@ fun EquationScreen(modifier: Modifier = Modifier) {
                 }
             }
 
-            // Step cards
-            res.steps.forEach { step ->
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    ),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Column(modifier = Modifier.padding(12.dp)) {
-                        Text(
-                            text = step.title,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 14.sp,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        Text(
-                            text = step.detail,
-                            fontSize = 14.sp,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.padding(top = 4.dp)
-                        )
-                    }
+            // Steps as a vertical timeline
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(0.dp)
+            ) {
+                res.steps.forEachIndexed { index, step ->
+                    StepTimelineItem(
+                        title = step.title,
+                        detail = step.detail,
+                        isLast = index == res.steps.lastIndex,
+                        accent = if (index % 2 == 0) Indigo else Teal
+                    )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun StepTimelineItem(
+    title: String,
+    detail: String,
+    isLast: Boolean,
+    accent: Color
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(IntrinsicSize.Min),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        // Timeline rail: colored dot + vertical connecting line
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.width(20.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(12.dp)
+                    .background(accent, CircleShape)
+            )
+            if (!isLast) {
+                Box(
+                    modifier = Modifier
+                        .width(2.dp)
+                        .fillMaxHeight()
+                        .background(accent.copy(alpha = 0.35f))
+                )
+            }
+        }
+
+        // Step content
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .padding(bottom = 12.dp)
+        ) {
+            Text(
+                text = title,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            if (detail.isNotBlank()) {
+                Text(
+                    text = detail,
+                    fontSize = 13.sp,
+                    fontFamily = FontFamily.Monospace,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier
+                        .padding(top = 4.dp)
+                        .fillMaxWidth()
+                        .background(NavyField, RoundedCornerShape(12.dp))
+                        .padding(10.dp)
+                )
             }
         }
     }
