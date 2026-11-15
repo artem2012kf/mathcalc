@@ -46,7 +46,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.mathcalc.settings.AppSettings
 import com.example.mathcalc.settings.Loc
 import com.example.mathcalc.ui.CalculatorScreen
-import com.example.mathcalc.ui.EquationScreen
+import com.example.mathcalc.ui.SolverScreen
 import com.example.mathcalc.ui.ExamplesScreen
 import com.example.mathcalc.ui.GraphScreen
 import com.example.mathcalc.ui.MathCalcTheme
@@ -188,7 +188,7 @@ fun MainApp() {
                     .padding(innerPadding)
             ) {
                 composable(Screen.Calculator.route) { CalculatorScreen() }
-                composable(Screen.Equations.route) { EquationScreen() }
+                composable(Screen.Equations.route) { SolverScreen() }
                 composable(Screen.Examples.route) { ExamplesScreen() }
                 composable(Screen.Graph.route) { GraphScreen() }
             }

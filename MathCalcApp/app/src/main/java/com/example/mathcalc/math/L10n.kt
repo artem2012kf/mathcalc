@@ -77,7 +77,7 @@ object L10n {
         // ---------- UI strings ----------
         "appTitle" to "MathCalc",
         "navCalc" to "Калькулятор",
-        "navEquations" to "Уравнения",
+        "navEquations" to "Решить",
         "navGraph" to "График",
         "errorInExpression" to "Ошибка в выражении",
         "history" to "История",
@@ -157,7 +157,29 @@ object L10n {
         "fromGallery" to "Из галереи",
         "camera" to "Камера",
         "photoSource" to "С распознанного фото: %s",
-        "photoError" to "Не удалось распознать уравнение на фото"
+        "photoError" to "Не удалось распознать уравнение на фото",
+
+        // ---------- Solver screen ----------
+        "solveTitle" to "Решить",
+        "tabInput" to "Ввод",
+        "badgeEquation" to "Уравнение",
+        "badgeFractions" to "Дроби",
+        "badgePercent" to "Проценты",
+        "badgeDivisibility" to "Делимость",
+        "badgeExpression" to "Выражение",
+        "badgePower" to "Степень",
+        "inputHint" to "Введите уравнение или пример…",
+        "detectionHint" to "Распознано: %s",
+        "detectionNone" to "Тип не определён",
+        "quickExamples" to "Быстрые примеры",
+        "scanAgain" to "Сканировать снова",
+        "scanning" to "Наведите камеру на уравнение",
+        "cameraPermissionTitle" to "Нужен доступ к камере",
+        "cameraPermissionText" to "Разрешите доступ к камере, чтобы распознавать уравнения в реальном времени. Можно также выбрать фото из галереи.",
+        "grantCamera" to "Разрешить доступ",
+        "cameraError" to "Камера недоступна: %s",
+        "detectedOk" to "Уравнение распознано",
+        "values" to "Значение"
     )
 
     private val en: Map<String, String> = mapOf(
@@ -226,7 +248,7 @@ object L10n {
         // ---------- UI strings ----------
         "appTitle" to "MathCalc",
         "navCalc" to "Calculator",
-        "navEquations" to "Equations",
+        "navEquations" to "Solve",
         "navGraph" to "Graph",
         "errorInExpression" to "Error in expression",
         "history" to "History",
@@ -306,7 +328,29 @@ object L10n {
         "fromGallery" to "From gallery",
         "camera" to "Camera",
         "photoSource" to "From the recognized photo: %s",
-        "photoError" to "Could not recognize an equation in the photo"
+        "photoError" to "Could not recognize an equation in the photo",
+
+        // ---------- Solver screen ----------
+        "solveTitle" to "Solve",
+        "tabInput" to "Input",
+        "badgeEquation" to "Equation",
+        "badgeFractions" to "Fractions",
+        "badgePercent" to "Percent",
+        "badgeDivisibility" to "Divisibility",
+        "badgeExpression" to "Expression",
+        "badgePower" to "Power",
+        "inputHint" to "Type an equation or example…",
+        "detectionHint" to "Detected: %s",
+        "detectionNone" to "Type not detected",
+        "quickExamples" to "Quick examples",
+        "scanAgain" to "Scan again",
+        "scanning" to "Point the camera at an equation",
+        "cameraPermissionTitle" to "Camera permission needed",
+        "cameraPermissionText" to "Allow camera access to recognize equations in real time. You can also pick a photo from the gallery.",
+        "grantCamera" to "Grant access",
+        "cameraError" to "Camera unavailable: %s",
+        "detectedOk" to "Equation recognized",
+        "values" to "Value"
     )
 
     /** Returns the localized string for [key], formatted with [args] if provided. */
